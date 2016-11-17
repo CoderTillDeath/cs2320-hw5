@@ -123,7 +123,7 @@ void quicksort(Person ** p, int begin, int end)
 
 	double pScore = p[pivot]->score;
 
-	cout << pScore << endl;
+//	cout << pScore << endl;
 
 	int i = begin, j = end;
 	while(i < j)
@@ -218,7 +218,7 @@ int main(int argc, char ** argv)
 //		cout << "Round " << i << endl;
 		scoreAll(arr,size,i);
 		quicksort(arr,0,size-1);
-		simplePrint(arr,size);
+//		simplePrint(arr,size);
 		PickTop(arr,size,nfemales,nmales,nunspec);	
 	}
 }

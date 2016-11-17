@@ -17,7 +17,6 @@ struct Person {
 	string github;
 	double score;
 	bool picked;
-	Person * next;
 };
 
 Person * newPerson(string name, double GPA, int CST, Gender gender, string github)
@@ -29,7 +28,6 @@ Person * newPerson(string name, double GPA, int CST, Gender gender, string githu
 	p->gender = gender;
 	p->github = github;
 	p->picked = false;
-	p->next = NULL;
 	return p;
 }
 
@@ -54,6 +52,14 @@ void printList(Person ** p, int size)
 void simplePrint(Person ** p, int size)
 {
 	for(int i = 0; i < size; i++)
+	{
+		gpaPrint(p[i]);
+	}
+}
+
+void printRange(Person ** p, int a, int b)
+{
+	for(int i = a; i <= b; i++)
 	{
 		gpaPrint(p[i]);
 	}
@@ -114,11 +120,42 @@ double fRand()
     return (double)rand() / RAND_MAX;
 }
 
-void quicksort(Person * p, int begin, int end)
+void quicksort(Person ** p, int begin, int end)
 {
-	if(p->next == NULL) return;
+	int size = end - begin;
+	if(size <= 0) return;	
+
+	int pivot = (int)(fRand() * (size+1))  + begin; 
+
+	double pScore = p[pivot]->score;
+
+//	cout << pScore << endl;
+
+	int i = begin, j = end;
+	while(i < j)
+	{
+		while(p[i]->score > pScore)
+		{
+			i++;
+		}
+		while(p[j]->score < pScore)
+		{
+			j--;
+		}
+		if(i < j)
+		{
+			Person * temp = p[i];
+			p[i] = p[j];
+			p[j] = temp;
+			i++;
+			j--;
+		}
+	}
 	
-	concat(quicksort(
+	if(size <= 1) return;
+
+	quicksort(p,begin,j);
+	quicksort(p,i,end);
 }
 
 void scoreAll(Person ** p, int size, int iter)
@@ -189,7 +226,7 @@ int main(int argc, char ** argv)
 //		cout << "Round " << i << endl;
 		scoreAll(arr,size,i);
 		quicksort(arr,0,size-1);
-		simplePrint(arr,size);
+//		simplePrint(arr,size);
 		PickTop(arr,size,nfemales,nmales,nunspec);	
 	}
 }

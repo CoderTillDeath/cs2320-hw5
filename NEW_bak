@@ -1,0 +1,232 @@
+#include <iostream>
+#include <fstream>
+#include <sstream>
+using namespace std;
+
+enum Gender {
+	male,
+	female,
+	other
+};
+
+struct Person {
+	string name;
+	double GPA;
+	int CST;
+	Gender gender;
+	string github;
+	double score;
+	bool picked;
+	Person * next;
+};
+
+Person * newPerson(string name, double GPA, int CST, Gender gender, string github)
+{
+	Person * p = new Person;
+	p->name = name;
+	p->GPA = GPA;
+	p->CST = CST;
+	p->gender = gender;
+	p->github = github;
+	p->picked = false;
+	p->next = NULL;
+	return p;
+}
+
+void printPerson(Person * p)
+{
+	cout << p->name << "\t" << p->GPA << "\t" << p->CST << "\t" << p->gender << "\t" << p->github << p->picked << "\t" <<  p->score << endl;
+}
+
+void gpaPrint(Person * p)
+{
+	cout << p->name << "\t" << p->GPA << endl;
+}
+
+Gender getGender(string s)
+{
+	if(s.compare("male") == 0) return male;
+	if(s.compare("female") == 0) return female;
+	return other;
+}
+
+Person * createPerson(string line)
+{
+	stringstream ss(line);
+	string name, github, g;
+	Gender gender;
+	double gpa;
+	int cst;
+	ss >> name;
+	ss >> gpa;
+	ss >> cst;
+	ss >> g;
+	ss >> github;
+	gender = getGender(g);
+
+	return newPerson(name,gpa,cst,gender,github);
+}
+
+struct Queue {
+	Person * front;
+	Person * back;
+};
+
+void printList(Queue * p)
+{
+	for(Person * current = p->front; current; current = current->next)
+	{
+		printPerson(current);
+	}
+}
+
+void simplePrint(Queue * p)
+{
+	for(Person * current = p->front; current; current = current->next)
+	{
+		gpaPrint(current);
+	}
+}
+
+void insert(Queue * q, Person * p)
+{
+	p->next = NULL;
+	if(q->front == NULL)
+	{
+		q->front = p;
+		q->back = p;
+	}
+	else
+	{
+		q->back->next = p;
+		q->back = p;
+	}
+}
+
+void clean(Queue * q)
+{
+	if(q->front != NULL) q->back->next = NULL;
+}
+
+Queue * newQueue()
+{
+	Queue * q = new Queue;
+	q->front = NULL;
+	q->back = NULL;
+	return q;
+}
+
+Queue * newQueue(Person * p)
+{
+	Queue * q = newQueue();
+	insert(q,p);
+}
+
+
+double scorePerson(Person * p, int x)
+{
+	if(p->picked) return -1;
+	double res = p->GPA * 10 * (20 - x) + p->CST - x * 2;
+	if(p->github.length() != 0) res += 10;
+	//return res;
+	return p->GPA;
+}
+
+void scoreAll(Queue * q, int iter)
+{
+	for(Person * current = q->front; current; current = current->next)
+	{
+		current->score = scorePerson(current, iter);
+	}
+}
+
+double fRand()
+{
+    return (double)rand() / RAND_MAX;
+}
+
+void quicksort(Queue * q)
+{
+	if(q->front == NULL || q->front == q->back) return;
+	
+	Queue * first = newQueue();
+	Queue * last = newQueue();
+
+	Person * current = q->front;
+	Person * next = current->next;
+
+	insert(last,current);
+
+	current = next;
+	next = next->next;
+
+	while(current)
+	{
+		if(current->score > last->front->score)
+		{
+			insert(first,current);
+		}
+		else
+		{
+			insert(last,current);
+		}
+
+		current = next;
+		if(next != NULL) next = next->next;
+	}
+
+	printList(last);
+	
+	quicksort(first);
+	quicksort(last);
+		
+	insert(first,last->front);
+	
+	q->front = first->front;
+	q->back = last->back;
+	
+	delete first;
+	delete last;
+}
+
+int main(int argc, char ** argv)
+{
+	string filename = argv[1];
+	filename = filename.substr(6);
+	ifstream file(filename);
+	string line;
+//	Person ** arr = new Person*[size];
+	Queue * q = newQueue();
+	int nfemales;
+	int nmales;
+	int nunspec;
+
+	while(getline(file,line))
+	{
+		if(line.length() != 0 && line.at(0) != '#')
+		{
+			stringstream ss(line);
+			string first;
+			ss >> first;
+
+			if(first.compare("instructions") == 0)
+			{
+				ss >> nfemales;
+				ss >> nmales;
+				ss >> nunspec;
+			}
+			else
+			{
+				insert(q,createPerson(line));
+			}
+		}
+	}
+
+		scoreAll(q,0);
+		quicksort(q);
+		simplePrint(q);
+	
+	for(int x = 0; x < 20; x+=3)
+	{
+	}
+}
